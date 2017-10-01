@@ -5,11 +5,15 @@ draw_hist = function(color) {
 }
 
 draw_plot = function(color) {
+        top = "Scatter plot"
         plot(data, col = color)
+        title(main = top)
 }
 
 draw_box = function(color) {
-        boxplot(data, col = color)
+        top = "Boxplot"
+        boxplot(data, col = color, ylab = "Values")
+        title(main = top)
 }
 
 draw_scatter = function(color) {
