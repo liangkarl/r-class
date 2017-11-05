@@ -1,0 +1,439 @@
+> source("ch04.R", encoding="BIG5")
+'data.frame':   2000 obs. of  5 variables:
+ $ 性別  : Factor w/ 2 levels "女","男": 1 1 1 1 1 1 1 1 1 1 ...
+ $ 憂鬱  : int  29 4 3 20 25 24 16 13 10 9 ...
+ $ 被霸凌: int  3 0 2 1 4 3 0 3 0 0 ...
+ $ 指數  : num  18.5 20.2 15.6 21.5 18.4 ...
+ $ 年齡  : int  17 15 16 18 15 13 17 17 17 13 ...
+Loading required package: alr3
+
+Attaching package: ‘alr3’
+
+The following object is masked from ‘package:MASS’:
+
+    forbes
+
+Loading required package: MBESS
+[1] "Bootstrap resampling has begun. This process may take a considerable amount of time if the number of replications is large, which is optim
+al for the bootstrap procedure."
+Warning: Ignoring unknown aesthetics: xmin, xmax
+Loading required package: pequod
+There were 50 or more warnings (use warnings() to see the first 50)
+> source("ch04.R", encoding="BIG5", echo=T)
+
+> #讀檔案，這是一般的文字檔，可以用 notepad 開啟
+> dta <- read.table("bully.txt", header = TRUE, fileEncoding="BIG5")
+
+> #看一下資料結構、前六筆、基本統計量
+> #程式報表4.1
+> head(dta)
+  性別 憂鬱 被霸凌  指數 年齡
+1   女   29      3 18.49   17
+2   女    4      0 20.17   15
+3   女    3      2 15.63   16
+4   女   20      1 21.48   18
+5   女   25      4 18.43   15
+6   女   24      3 16.29   13
+
+> str(dta)
+'data.frame':   2000 obs. of  5 variables:
+ $ 性別  : Factor w/ 2 levels "女","男": 1 1 1 1 1 1 1 1 1 1 ...
+ $ 憂鬱  : int  29 4 3 20 25 24 16 13 10 9 ...
+ $ 被霸凌: int  3 0 2 1 4 3 0 3 0 0 ...
+ $ 指數  : num  18.5 20.2 15.6 21.5 18.4 ...
+ $ 年齡  : int  17 15 16 18 15 13 17 17 17 13 ...
+
+> summary(dta)
+ 性別           憂鬱           被霸凌            指數            年齡
+ 女:1000   Min.   : 0.00   Min.   : 0.000   Min.   :10.23   Min.   :12.00
+ 男:1000   1st Qu.: 8.00   1st Qu.: 0.000   1st Qu.:18.07   1st Qu.:13.00
+           Median :14.00   Median : 2.000   Median :19.95   Median :15.00
+           Mean   :15.73   Mean   : 2.028   Mean   :20.57   Mean   :14.86
+           3rd Qu.:21.00   3rd Qu.: 3.000   3rd Qu.:22.39   3rd Qu.:16.00
+           Max.   :57.00   Max.   :12.000   Max.   :42.98   Max.   :19.00
+
+> #選取青少女與青少男資料，分別稱做 dta_f、dta_m
+> dta_f <- subset(dta, 性別 == '女')
+
+> dta_m <- subset(dta, 性別 != '女')
+
+> #看一下變項間關聯
+> #圖4.2
+> require(GGally)
+
+> ggpairs(dta_f[,-1], axisLabels= 'internal')
+
+> #Baron & kenny（1986） 的四步驟，以青少女（dta_f）示範
+> #程式報表4.2
+> summary(lm(憂鬱~指數+年齡,data=dta_f))
+
+Call:
+lm(formula = 憂鬱 ~ 指數 + 年齡, data = dta_f)
+
+Residuals:
+    Min      1Q  Median      3Q     Max
+-17.314  -7.989  -1.898   5.656  38.675
+
+Coefficients:
+            Estimate Std. Error t value Pr(>|t|)
+(Intercept) 10.02785    3.16967   3.164   0.0016 **
+指數         0.19427    0.09897   1.963   0.0499 *
+年齡         0.18671    0.18191   1.026   0.3050
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Residual standard error: 10.43 on 997 degrees of freedom
+Multiple R-squared:  0.005495,  Adjusted R-squared:  0.0035
+F-statistic: 2.755 on 2 and 997 DF,  p-value: 0.06412
+
+
+> summary(m2<-lm(被霸凌~指數+年齡,data=dta_f))
+
+Call:
+lm(formula = 被霸凌 ~ 指數 + 年齡, data = dta_f)
+
+Residuals:
+   Min     1Q Median     3Q    Max
+-3.122 -1.550 -0.394  1.023  9.776
+
+Coefficients:
+            Estimate Std. Error t value Pr(>|t|)
+(Intercept)  4.38104    0.60376   7.256 7.99e-13 ***
+指數         0.04418    0.01885   2.344   0.0193 *
+年齡        -0.21343    0.03465  -6.160 1.06e-09 ***
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Residual standard error: 1.987 on 997 degrees of freedom
+Multiple R-squared:  0.03896,   Adjusted R-squared:  0.03703
+F-statistic: 20.21 on 2 and 997 DF,  p-value: 2.498e-09
+
+
+> summary(lm(憂鬱~被霸凌+年齡,data=dta_f))
+
+Call:
+lm(formula = 憂鬱 ~ 被霸凌 + 年齡, data = dta_f)
+
+Residuals:
+    Min      1Q  Median      3Q     Max
+-21.516  -6.737  -1.313   5.258  39.031
+
+Coefficients:
+            Estimate Std. Error t value Pr(>|t|)
+(Intercept)   1.5685     2.5636   0.612    0.541
+被霸凌        2.2839     0.1496  15.271  < 2e-16 ***
+年齡          0.6960     0.1656   4.204 2.85e-05 ***
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Residual standard error: 9.408 on 997 degrees of freedom
+Multiple R-squared:  0.1909,    Adjusted R-squared:  0.1893
+F-statistic: 117.6 on 2 and 997 DF,  p-value: < 2.2e-16
+
+
+> summary(m4<-lm(憂鬱~指數+被霸凌+年齡,data=dta_f))
+
+Call:
+lm(formula = 憂鬱 ~ 指數 + 被霸凌 + 年齡, data = dta_f)
+
+Residuals:
+    Min      1Q  Median      3Q     Max
+-21.270  -6.697  -1.322   5.247  38.488
+
+Coefficients:
+            Estimate Std. Error t value Pr(>|t|)
+(Intercept)  0.07306    2.93335   0.025    0.980
+指數         0.09388    0.08951   1.049    0.295
+被霸凌       2.27224    0.14996  15.152  < 2e-16 ***
+年齡         0.67168    0.16716   4.018 6.31e-05 ***
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Residual standard error: 9.408 on 996 degrees of freedom
+Multiple R-squared:  0.1918,    Adjusted R-squared:  0.1894
+F-statistic: 78.79 on 3 and 996 DF,  p-value: < 2.2e-16
+
+
+> #把結果記下來，等一下要用
+> res_f <- lapply(list(m2, m4), summary)
+
+> #部分殘差圖，先設定一張圖分成三小圖
+> #圖4.3
+> par(mfrow = c(1, 3))
+
+> termplot(m4, partial.resid = T, smooth = panel.smooth)
+
+> #Sobel test
+> #擷取回迴歸係數與標準誤
+> a <- c(Est = res_f[[1]]$coef['指數', 'Estimate'],
++        SE = res_f[[1]]$coef['指數', 'Std. Error'])
+
+> b <- c(Est = res_f[[2]]$coef['被霸凌', 'Estimate'],
++        SE = res_f[[2]]$coef['被霸凌', 'Std. Error'])
+
+> #計算中介效果與標準誤，並進行檢驗
+> ab <- a['Est'] * b['Est']
+
+> abse <- sqrt(a['Est']^2 * b['SE']^2 + b['Est']^2 * a['SE']^2)
+
+> c(ab, z_ab = ab/abse, pz_ab = 2 * (1 - pnorm(abs(ab/abse))))
+       Est   z_ab.Est  pz_ab.Est
+0.10039345 2.31611999 0.02055172
+
+> #利用拔靴法計算中介效果信賴區間
+> #先載入 alr3 套件，用來協助拔靴法
+> require(alr3)
+
+> #記得兩邊的隨機種子要設定成一樣
+> set.seed(2014)
+
+> beta4_bt <- bootCase(m4, B = 1001)
+
+> set.seed(2014)
+
+> beta2_bt <- bootCase(m2, B = 1001)
+
+> #擷取中介效果
+> ab_bt <- beta4_bt[,3] * beta2_bt[,2]
+
+> c("Bootstrap SD" = sd(ab_bt), quantile(ab_bt, c(.025, .975)))
+Bootstrap SD         2.5%        97.5%
+  0.04900917   0.00839909   0.20318546
+
+> #如果沒有共變量，可以用MBESS套件
+> require(MBESS)
+
+> mediation(dv=dta$憂鬱, x=dta$指數, mediator=dta$被霸凌,
++   bootstrap = TRUE, B = 1001)
+[1] "Bootstrap resampling has begun. This process may take a considerable amount of time if the number of replications is large, which is optim
+al for the bootstrap procedure."
+                                            Estimate CI.Lower_Percentile
+Indirect.Effect                         0.0599062043        9.000927e-03
+Indirect.Effect.Partially.Standardized  0.0060142818        8.933514e-04
+Index.of.Mediation                      0.0222861092        3.372740e-03
+R2_4.5                                  0.0022626971        1.553956e-05
+R2_4.6                                  0.0004970161        1.389828e-05
+R2_4.7                                  0.0030642962        9.521230e-05
+Ratio.of.Indirect.to.Total.Effect       0.3606266040        6.134400e-02
+Ratio.of.Indirect.to.Direct.Effect      0.5640312941       -3.517826e+00
+Success.of.Surrogate.Endpoint           5.4859617182        1.013742e+00
+Residual.Based_Gamma                    0.0009911213       -6.897989e-04
+Residual.Based.Standardized_gamma      -0.0007592795       -3.094809e-03
+SOS                                     0.5924796469        5.632845e-02
+                                       CI.Upper_Percentile CI.Lower_BCa
+Indirect.Effect                                0.117003445           NA
+Indirect.Effect.Partially.Standardized         0.011683645           NA
+Index.of.Mediation                             0.042698798           NA
+R2_4.5                                         0.006300371           NA
+R2_4.6                                         0.001818483           NA
+R2_4.7                                         0.010140166           NA
+Ratio.of.Indirect.to.Total.Effect              1.279072134           NA
+Ratio.of.Indirect.to.Direct.Effect             4.829165174           NA
+Success.of.Surrogate.Endpoint                 19.569267432           NA
+Residual.Based_Gamma                           0.004079000           NA
+Residual.Based.Standardized_gamma              0.003080666           NA
+SOS                                            0.982422260           NA
+                                       CI.Upper_BCa
+Indirect.Effect                                  NA
+Indirect.Effect.Partially.Standardized           NA
+Index.of.Mediation                               NA
+R2_4.5                                           NA
+R2_4.6                                           NA
+R2_4.7                                           NA
+Ratio.of.Indirect.to.Total.Effect                NA
+Ratio.of.Indirect.to.Direct.Effect               NA
+Success.of.Surrogate.Endpoint                    NA
+Residual.Based_Gamma                             NA
+Residual.Based.Standardized_gamma                NA
+SOS                                              NA
+
+> #中介效果與總效果圖
+> #圖4.4
+> mediation.effect.plot(dv=dta$憂鬱, x=dta$指數, mediator=dta$被霸凌,
++                       legend.loc=NA, ylab = '憂鬱', xlab = '被霸凌')
+
+> #調節效果
+> #驗證性別對指數到被霸凌影響力的調節效果
+> m1_fl <- lm(被霸凌 ~ 指數 + 年齡 + 性別 + 指數:性別, data = dta)
+
+> m1_rd <- update(m1_fl, . ~ . - 指數:性別)
+
+> anova(m1_rd, m1_fl)
+Analysis of Variance Table
+
+Model 1: 被霸凌 ~ 指數 + 年齡 + 性別
+Model 2: 被霸凌 ~ 指數 + 年齡 + 性別 + 指數:性別
+  Res.Df    RSS Df Sum of Sq      F Pr(>F)
+1   1996 7860.4
+2   1995 7860.2  1    0.1127 0.0286 0.8657
+
+> summary(m1_fl)$r.sq - summary(m1_rd)$r.sq
+[1] 1.39987e-05
+
+> #驗證性別對指數到憂鬱影響力的調節效果
+> m4_fl <-lm(憂鬱 ~ 指數 + 被霸凌 + 年齡 + 性別 + 指數:性別,
++             data = dta)
+
+> m4_rd <- update(m4_fl, . ~ . - 指數:性別)
+
+> anova(m4_rd, m4_fl)
+Analysis of Variance Table
+
+Model 1: 憂鬱 ~ 指數 + 被霸凌 + 年齡 + 性別
+Model 2: 憂鬱 ~ 指數 + 被霸凌 + 年齡 + 性別 + 指數:性別
+  Res.Df    RSS Df Sum of Sq      F Pr(>F)
+1   1995 161140
+2   1994 161140  1   0.10592 0.0013 0.9711
+
+> summary(m4_fl)$r.sq - summary(m4_rd)$r.sq
+[1] 5.340786e-07
+
+> #驗證性別對被霸凌到憂鬱影響力的調節效果
+> m4_fl2 <- update(m4_rd, . ~ . + 被霸凌:性別)
+
+> anova(m4_rd, m4_fl2)
+Analysis of Variance Table
+
+Model 1: 憂鬱 ~ 指數 + 被霸凌 + 年齡 + 性別
+Model 2: 憂鬱 ~ 指數 + 被霸凌 + 年齡 + 性別 + 被霸凌:性別
+  Res.Df    RSS Df Sum of Sq      F  Pr(>F)
+1   1995 161140
+2   1994 160704  1    436.61 5.4174 0.02004 *
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+> summary(m4_fl2)$r.sq - summary(m4_rd)$r.sq
+[1] 0.00220142
+
+> #計算相對解釋量差異
+> 100*(summary(m4_fl2)$r.sq - summary(m4_rd)$r.sq)/summary(m4_fl2)$r.sq
+[1] 1.160369
+
+> #呈現迴歸結果
+> #程式報表4.3
+> summary(m4_fl2)
+
+Call:
+lm(formula = 憂鬱 ~ 指數 + 被霸凌 + 年齡 + 性別 +
+    被霸凌:性別, data = dta)
+
+Residuals:
+    Min      1Q  Median      3Q     Max
+-24.691  -6.475  -1.249   4.854  38.350
+
+Coefficients:
+              Estimate Std. Error t value Pr(>|t|)
+(Intercept)   -0.89795    1.96227  -0.458   0.6473
+指數           0.09593    0.05532   1.734   0.0831 .
+被霸凌         2.28217    0.14168  16.108  < 2e-16 ***
+年齡           0.73259    0.11313   6.476 1.19e-10 ***
+性別男        -0.79397    0.57505  -1.381   0.1675
+被霸凌:性別男 -0.46674    0.20053  -2.328   0.0200 *
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Residual standard error: 8.977 on 1994 degrees of freedom
+Multiple R-squared:  0.1897,    Adjusted R-squared:  0.1877
+F-statistic: 93.37 on 5 and 1994 DF,  p-value: < 2.2e-16
+
+
+> #呈現變項效果，載入coefplot套件
+> require(coefplot)
+
+> #記下設定
+> old <- theme_set(theme_bw())
+
+> #去除截距、把效果畫出來
+> #圖4.5
+> coefplot(update(m4_fl2, . ~ . - 1)) +
++  labs(x = '估計值', y = '迴歸參數', title = '')
+Warning: Ignoring unknown aesthetics: xmin, xmax
+
+> #利用fortify指令把資料加進結果中，方便畫圖
+> m4_fy <- fortify(m4_fl2)
+
+> #交互作用圖
+> #圖4.6
+> ggplot(data = m4_fy, aes(x = 被霸凌, y = .fitted, shape = 性別, color = 性別 )) +
++  geom_point(aes(x = 被霸凌, y = 憂鬱, shape = 性別))+
++  sta .... [TRUNCATED]
+
+> #回覆色彩主題
+> theme_set(old)
+
+> #檢驗調節效果
+> #此套件不支援中文，把變項換成英文
+> require(pequod)
+
+> dtaeng <- dta
+
+> names(dtaeng) <- c('gender','dep','bully','BMI','age')
+
+> dtaeng$gender <- as.numeric(dtaeng$gender=="男")
+
+> summary(rslt <- lmres(dep~BMI+age+bully*gender, data=dtaeng))
+Formula:
+dep ~ BMI + age + bully + gender + bully.XX.gender
+<environment: 0x4dc68a8>
+
+Models
+         R     R^2   Adj. R^2    F     df1  df2  p.value
+Model  0.436  0.190     0.188 93.374  5.000 1994  <2e-16 ***
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Residuals
+   Min. 1st Qu.  Median    Mean 3rd Qu.    Max.
+-24.691  -6.474  -1.249   0.000   4.854  38.350
+
+Coefficients
+                Estimate   StdErr  t.value    beta p.value
+(Intercept)     -0.89795  1.96227 -0.45761         0.64729
+BMI              0.09593  0.05532  1.73403  0.0357 0.08307 .
+age              0.73259  0.11313  6.47550  0.1332 < 2e-16 ***
+bully            2.28217  0.14168 16.10766  0.4598 < 2e-16 ***
+gender          -0.79397  0.57505 -1.38070 -0.0399 0.16753
+bully.XX.gender -0.46674  0.20053 -2.32753 -0.0805 0.02004 *
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Collinearity
+                   VIF Tolerance
+BMI             1.0424    0.9593
+age             1.0405    0.9611
+bully           2.0052    0.4987
+gender          2.0516    0.4874
+bully.XX.gender 2.9426    0.3398
+
+
+> #計算與檢驗簡單斜率
+> #程式報表4.4
+> summary(sl<-simpleSlope(rslt,pred="bully",mod1="gender",coded="gender"))
+
+** Estimated points of dep  **
+
+                  Low bully (-1 SD) High bully (+1 SD)
+Low gender ( 0 )            -0.8496             8.3102
+High gender ( 1 )           -1.6534             5.6330
+
+
+
+** Simple Slopes analysis ( df= 1994 ) **
+
+                  simple slope standard error t-value p.value
+Low gender ( 0 )         2.282          0.142    16.1  <2e-16 ***
+High gender ( 1 )        1.815          0.143    12.7  <2e-16 ***
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+
+
+** Bauer & Curran 95% CI **
+
+       lower CI upper CI
+gender   2.8559   28.354
+
+> #也可以畫圖
+> #圖4.7
+> PlotSlope(sl)
+There were 50 or more warnings (use warnings() to see the first 50)
