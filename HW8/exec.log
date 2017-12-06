@@ -1,0 +1,881 @@
+> source("ch06.R", encoding="BIG5", echo=T)
+
+> #讀進資料
+> dta <- read.table("prenatal1.txt", header = T, fileEncoding="BIG5")
+
+> #以str看一下資料結構、看一下最後六題，確認樣本數是500
+> #程式報表6.1
+> str(dta)
+'data.frame':   500 obs. of  35 variables:
+ $ 相處    : int  2 1 1 1 1 1 3 1 1 1 ...
+ $ 值得    : int  1 1 1 1 1 2 2 2 1 1 ...
+ $ 期待    : int  1 1 1 1 1 2 1 2 1 1 ...
+ $ 不確定  : int  1 2 1 3 2 1 4 1 1 4 ...
+ $ 喜歡    : int  1 1 2 1 1 2 3 2 1 1 ...
+ $ 平衡    : int  3 2 3 4 4 3 4 3 3 3 ...
+ $ 照顧    : int  1 1 1 2 1 2 4 1 1 1 ...
+ $ 關注    : int  2 1 1 1 1 2 2 1 1 1 ...
+ $ 負擔    : int  1 1 1 1 3 1 1 1 1 1 ...
+ $ 思考    : int  1 3 2 1 1 2 1 2 1 2 ...
+ $ 時間    : int  2 2 1 4 2 1 4 3 2 4 ...
+ $ 不喜歡  : int  1 1 1 2 1 1 4 1 1 1 ...
+ $ 喜愛    : int  1 1 2 1 1 2 1 2 1 1 ...
+ $ 好母親  : int  1 1 2 1 1 2 3 2 1 1 ...
+ $ 將喜愛  : int  1 1 2 1 1 2 1 2 1 1 ...
+ $ 母親興趣: int  1 1 1 1 1 2 1 2 1 2 ...
+ $ 母親高興: int  1 1 2 1 1 2 4 2 1 3 ...
+ $ 母親建議: int  1 2 2 1 1 3 3 1 1 1 ...
+ $ 母親談論: int  1 1 3 1 1 3 4 1 1 1 ...
+ $ 母親期待: int  1 1 2 1 1 2 4 4 1 2 ...
+ $ 母親相處: int  1 1 2 1 1 2 4 4 1 2 ...
+ $ 母親爭論: int  1 1 1 4 1 2 4 3 2 2 ...
+ $ 母親信心: int  1 1 3 1 1 2 4 2 1 1 ...
+ $ 母親鼓勵: int  1 1 3 1 1 3 4 2 1 3 ...
+ $ 母親批評: int  1 1 1 4 2 2 1 3 2 3 ...
+ $ 先生談論: int  1 1 1 1 3 1 3 2 1 3 ...
+ $ 先生批評: int  1 1 1 4 1 1 4 3 1 2 ...
+ $ 先生體諒: int  1 1 2 3 2 2 4 2 1 3 ...
+ $ 先生討論: int  1 2 2 2 1 1 4 3 1 3 ...
+ $ 先生幫忙: int  1 1 2 2 2 1 3 4 1 1 ...
+ $ 性慾變化: int  1 2 1 3 2 2 2 1 1 3 ...
+ $ 先生支援: int  1 1 2 2 1 1 4 1 1 1 ...
+ $ 先生負擔: int  1 1 1 4 2 1 4 1 1 2 ...
+ $ 性調適  : int  1 2 2 1 2 2 4 2 1 4 ...
+ $ 先生分擔: int  1 2 2 1 2 1 4 2 1 1 ...
+
+> tail(dta)
+    相處 值得 期待 不確定 喜歡 平衡 照顧 關注 負擔 思考 時間 不喜歡 喜愛 好母親
+495    1    1    1      2    1    3    2    1    1    1    3      2    1      1
+496    1    1    1      1    1    1    1    1    1    1    1      1    1      1
+497    1    1    1      2    3    3    2    1    2    2    2      2    3      2
+498    2    2    2      3    2    3    3    2    2    2    2      2    2      2
+499    2    2    2      3    2    2    2    2    3    2    3      1    3      2
+500    1    2    1      1    1    4    1    1    1    1    3      1    1      1
+    將喜愛 母親興趣 母親高興 母親建議 母親談論 母親期待 母親相處 母親爭論
+495      1        3        2        3        2        2        3        1
+496      1        1        1        1        1        1        1        1
+497      3        1        1        1        1        1        1        2
+498      2        1        2        2        2        1        2        2
+499      2        2        2        2        2        2        2        1
+500      1        1        1        2        1        1        1        1
+    母親信心 母親鼓勵 母親批評 先生談論 先生批評 先生體諒 先生討論 先生幫忙
+495        3        1        2        1        1        1        1        2
+496        1        1        1        1        1        1        1        1
+497        1        1        3        1        1        1        1        2
+498        2        2        2        1        1        1        1        1
+499        2        2        1        2        1        2        3        3
+500        1        1        1        1        1        1        1        1
+    性慾變化 先生支援 先生負擔 性調適 先生分擔
+495        2        1        1      2        1
+496        1        1        1      1        1
+497        2        1        1      2        3
+498        2        2        3      2        1
+499        3        3        3      3        2
+500        1        1        1      1        1
+
+> #計算每題遺漏比率，500是樣本數
+> show(apply(apply(dta, 2, is.na), 2, sum)/500)
+    相處     值得     期待   不確定     喜歡     平衡     照顧     關注
+       0        0        0        0        0        0        0        0
+    負擔     思考     時間   不喜歡     喜愛   好母親   將喜愛 母親興趣
+       0        0        0        0        0        0        0        0
+母親高興 母親建議 母親談論 母親期待 母親相處 母親爭論 母親信心 母親鼓勵
+       0        0        0        0        0        0        0        0
+母親批評 先生談論 先生批評 先生體諒 先生討論 先生幫忙 性慾變化 先生支援
+       0        0        0        0        0        0        0        0
+先生負擔   性調適 先生分擔
+       0        0        0
+
+> #看看各題四個選項分配
+> show(dta_tbl <- apply(dta, 2,  table)/500)
+   相處  值得  期待 不確定  喜歡  平衡  照顧  關注  負擔  思考  時間 不喜歡
+1 0.780 0.696 0.724  0.392 0.752 0.220 0.468 0.680 0.662 0.548 0.250  0.712
+2 0.164 0.224 0.206  0.234 0.180 0.246 0.248 0.200 0.216 0.316 0.290  0.168
+3 0.048 0.070 0.062  0.290 0.054 0.354 0.192 0.094 0.078 0.108 0.274  0.076
+4 0.008 0.010 0.008  0.084 0.014 0.180 0.092 0.026 0.044 0.028 0.186  0.044
+   喜愛 好母親 將喜愛 母親興趣 母親高興 母親建議 母親談論 母親期待 母親相處
+1 0.762  0.604  0.846    0.678    0.732    0.606    0.642    0.728    0.714
+2 0.166  0.280  0.116    0.220    0.178    0.248    0.222    0.176    0.212
+3 0.058  0.106  0.030    0.082    0.066    0.120    0.102    0.080    0.060
+4 0.014  0.010  0.008    0.020    0.024    0.026    0.034    0.016    0.014
+  母親爭論 母親信心 母親鼓勵 母親批評 先生談論 先生批評 先生體諒 先生討論
+1    0.504    0.522    0.538    0.576    0.756    0.814    0.636    0.532
+2    0.294    0.274    0.230    0.240    0.146    0.118    0.240    0.288
+3    0.130    0.156    0.178    0.110    0.066    0.042    0.078    0.136
+4    0.072    0.048    0.054    0.074    0.032    0.026    0.046    0.044
+  先生幫忙 性慾變化 先生支援 先生負擔 性調適 先生分擔
+1    0.554    0.556    0.742    0.612  0.406    0.606
+2    0.276    0.244    0.172    0.236  0.296    0.240
+3    0.116    0.142    0.056    0.096  0.204    0.100
+4    0.054    0.058    0.030    0.056  0.094    0.054
+
+> #為畫圖準備，載入reshape2，將表格資料由寬形換成長形
+> require(reshape2)
+
+> dtal_tbl <- melt(dta_tbl)
+
+> #命名長形資料變項名
+> names(dtal_tbl) <- c("選項", "題目", "比率")
+
+> #製造題目編號
+> dtal_tbl$題目編號 <- rep(1:35, rep(4,35))
+
+> #更動選項顯示，利用plyr套件
+> require(plyr)
+
+> dtal_tbl$選項 <- mapvalues(dtal_tbl$選項, from = c(1,2,3,4), to = c("一點也不","稍微如此","有些如此","的確如此"))
+
+> dtal_tbl$選項 <- ordered(dtal_tbl$選項,c("一點也不","稍微如此","有些如此","的確如此"))
+
+> #看一下資料
+> #程式報表6.2
+> head(dtal_tbl)
+      選項 題目  比率 題目編號
+1 一點也不 相處 0.780        1
+2 稍微如此 相處 0.164        1
+3 有些如此 相處 0.048        1
+4 的確如此 相處 0.008        1
+5 一點也不 值得 0.696        2
+6 稍微如此 值得 0.224        2
+
+> #準備畫圖，更改並記錄下目前配色主題
+> require(ggplot2)
+
+> old <- theme_set(theme_bw())
+
+> #分量表一：前15題
+> #圖6.1
+> ggplot(data = subset(dtal_tbl, 題目編號 < 16), aes(x = reorder(題目, 比率, max),
++        y = 比率, ymin = 0.25, ymax = 比率, group = 題目)) .... [TRUNCATED]
+
+> #分量表二：16-25題
+> ggplot(data = subset(dtal_tbl, 題目編號 > 15 & 題目編號 < 26),  aes(x = reorder(題目, 比率, max),
++        y = 比率, ymin = 0.25, ymax = 比率, group .... [TRUNCATED]
+
+> #分量表三：26-35題
+> ggplot(data = subset(dtal_tbl, 題目編號 > 25),  aes(x = reorder(題目, 比率, max),
++        y = 比率, ymin = 0.25, ymax = 比率, group = 題目)) +
++  .... [TRUNCATED]
+
+> #回復配色主題
+> theme_set(old)
+
+> #定義一個函數，可以同時
+> #計算題目的平均數、標準差、偏態與峰度
+> my_summary <- function(x) {
++  require(moments)
++  funs <- c(mean, sd, skewness, kurtosis)
++  sapply(funs, func .... [TRUNCATED]
+
+> #一次算完所有題目前四級動差，並存成資料檔
+> #程式報表6.3
+> dta_desc <- apply(dta, 2, my_summary)
+
+> rownames(dta_desc) <- c("平均", "標準差", "偏態", "峰度")
+
+> rslt1 <- as.data.frame(t(dta_desc))
+
+> round(rslt1,3)
+          平均 標準差   偏態   峰度
+相處     1.284  0.590  2.175  7.457
+值得     1.394  0.663  1.632  5.059
+期待     1.354  0.634  1.767  5.572
+不確定   2.066  1.008  0.362  1.851
+喜歡     1.330  0.643  2.053  6.895
+平衡     2.494  1.026 -0.095  1.868
+照顧     1.908  1.011  0.721  2.264
+關注     1.466  0.771  1.586  4.669
+負擔     1.504  0.819  1.617  4.799
+思考     1.616  0.789  1.136  3.601
+時間     2.396  1.055  0.111  1.801
+不喜歡   1.452  0.815  1.797  5.303
+喜愛     1.324  0.648  2.089  6.940
+好母親   1.522  0.723  1.166  3.465
+將喜愛   1.200  0.518  2.906 11.911
+母親興趣 1.444  0.729  1.606  4.903
+母親高興 1.382  0.716  1.941  6.183
+母親建議 1.566  0.802  1.244  3.621
+母親談論 1.528  0.812  1.441  4.189
+母親期待 1.384  0.703  1.805  5.507
+母親相處 1.374  0.663  1.814  5.896
+母親爭論 1.770  0.933  1.004  2.987
+母親信心 1.730  0.894  0.960  2.880
+母親鼓勵 1.748  0.933  0.920  2.646
+母親批評 1.682  0.939  1.208  3.345
+先生談論 1.374  0.748  2.061  6.486
+先生批評 1.280  0.665  2.600  9.371
+先生體諒 1.534  0.826  1.536  4.583
+先生討論 1.692  0.866  1.045  3.156
+先生幫忙 1.670  0.882  1.167  3.427
+性慾變化 1.702  0.918  1.074  3.049
+先生支援 1.374  0.726  2.063  6.716
+先生負擔 1.596  0.878  1.379  3.937
+性調適   1.986  0.994  0.604  2.208
+先生分擔 1.602  0.875  1.350  3.864
+
+> #準備畫圖，改成長形資料
+> dtal_desc <- melt(dta_desc)
+
+> names(dtal_desc)[1:2] <- c("動差", "題目")
+
+> head(dtal_desc)
+    動差 題目     value
+1   平均 相處 1.2840000
+2 標準差 相處 0.5899492
+3   偏態 相處 2.1745686
+4   峰度 相處 7.4572767
+5   平均 值得 1.3940000
+6 標準差 值得 0.6630560
+
+> #換配色主題，並把舊的存起來
+> old <- theme_set(theme_minimal())
+
+> #繪製所有題目平均數
+> ggplot(data = subset(dtal_desc, 動差 == "平均"),
++        aes(x = reorder(題目, value, max), y = value, group = 動差)) +
++  geom_point(size =  .... [TRUNCATED]
+
+> #繪製所有題目標準差
+> #圖6.2
+> ggplot(data = subset(dtal_desc, 動差 == "標準差"),
++        aes(x = reorder(題目, value, max), y = value, group = 動差)) +
++  geom_poin .... [TRUNCATED]
+
+> #繪製所有題目偏態
+> ggplot(data = subset(dtal_desc, 動差 == "偏態"),
++        aes(x = reorder(題目, value, max), y = value, group = 動差)) +
++  geom_point(size = 3 .... [TRUNCATED]
+
+> #繪製所有題目峰度
+> ggplot(data = subset(dtal_desc, 動差 == "峰度"),
++        aes(x = reorder(題目, value, max), y = value, group = 動差)) +
++  geom_point(size = 3 .... [TRUNCATED]
+
+> #恢復配色主題
+> theme_set(old)
+
+> #計算區辨度。以總分為準，選取低分組與高分組，比較各題在兩組上的差異。
+> dta$tot <- apply(dta, 1, sum)
+
+> dta$grp <- NA
+
+> dta$grp[rank(dta$tot) < 500*.27] <- "L"
+
+> dta$grp[rank(dta$tot) > 500*.73] <- "H"
+
+> dta$grp <- factor(dta$grp)
+
+> #算高低分組平均數
+> dtam <- aggregate(dta[,1:35], by=list(dta$grp), mean)
+
+> #第一欄沒有用，刪掉
+> dtam <- t(dtam[,-1])
+
+> #t檢定
+> item_t <- sapply(dta[,1:35], function(x) t.test(x ~ dta$grp)$statistic)
+
+> #將計算結果存於新資料框架rslt2中
+> rslt2 <- data.frame(Item=rownames(dtam),m.l=dtam[,2], m.h=dtam[,1], m.dif=dtam[,1]-dtam[,2], t.stat=item_t)
+
+> #畫出t檢定結果
+> #圖6.3
+> ggplot(data = rslt2, aes(x=reorder(Item, t.stat, max), y=t.stat)) +
++  geom_point() +
++  geom_hline(yintercept = 2, linetype="das ..." ... [TRUNCATED]
+
+> #整理資料、命名欄位並四捨五入取至小數點後第3位
+> #程式報表6.4
+> rslt2 <- rslt2[,-1]
+
+> names(rslt2) <- c('低分組平均','高分組平均','差異','t檢定')
+
+> round(rslt2,3)
+         低分組平均 高分組平均  差異  t檢定
+相處          1.068      1.662 0.593  8.369
+值得          1.121      1.782 0.661  8.232
+期待          1.015      1.835 0.819 11.177
+不確定        1.348      2.692 1.343 13.439
+喜歡          1.000      1.842 0.842 11.175
+平衡          1.886      2.789 0.903  7.512
+照顧          1.220      2.549 1.329 13.040
+關注          1.076      1.932 0.857 10.366
+負擔          1.076      2.090 1.014 11.769
+思考          1.121      2.113 0.992 12.432
+時間          1.818      2.865 1.046  8.642
+不喜歡        1.076      1.812 0.736  8.561
+喜愛          1.008      1.827 0.819 11.198
+好母親        1.061      2.135 1.075 14.444
+將喜愛        1.023      1.534 0.511  7.660
+母親興趣      1.030      2.015 0.985 12.559
+母親高興      1.053      2.000 0.947 10.890
+母親建議      1.076      2.226 1.150 13.758
+母親談論      1.076      2.180 1.105 12.594
+母親期待      1.030      2.015 0.985 12.016
+母親相處      1.000      1.932 0.932 12.852
+母親爭論      1.295      2.278 0.983  9.519
+母親信心      1.083      2.466 1.383 15.630
+母親鼓勵      1.106      2.421 1.315 14.452
+母親批評      1.197      2.105 0.908  8.966
+先生談論      1.053      1.992 0.939 10.683
+先生批評      1.068      1.534 0.466  6.002
+先生體諒      1.083      2.135 1.052 11.384
+先生討論      1.114      2.474 1.360 16.138
+先生幫忙      1.114      2.353 1.240 13.410
+性慾變化      1.212      2.165 0.953 10.140
+先生支援      1.038      1.955 0.917 10.630
+先生負擔      1.053      2.278 1.225 13.841
+性調適        1.303      2.669 1.366 13.635
+先生分擔      1.076      2.278 1.202 12.747
+
+> #利用psychometrics套件，計算題目與總分相關
+> require(psychometric)
+Loading required package: psychometric
+
+Attaching package: ‘psychometric’
+
+The following object is masked from ‘package:psych’:
+
+    alpha
+
+The following object is masked from ‘package:ggplot2’:
+
+    alpha
+
+
+> itotr <- item.exam(dta[, 1:35], discrim = TRUE)
+
+> #將資料轉換為包含三個資料框架的列
+> ldta <- list(x = dta[, 1:15], y = dta[,16:25], z = dta[, 26:35])
+
+> #計算題目與分量表總分相關
+> isubr <- lapply(ldta, item.exam, discrim = TRUE)
+
+> #整理分析結果並存檔
+> rslt3 <- t(rbind(itotr$Item.Tot.woi,
++            c(isubr$x$Item.Tot.woi, isubr$y$Item.Tot.woi, isubr$z$Item.Tot.woi) ) )
+
+> #呈現第三部分
+> rslt3 <- data.frame(rslt3)
+
+> names(rslt3) <- c('題目總分相關','題目分量表相關')
+
+> row.names(rslt3) <- names(dta[,1:35])
+
+> round(rslt3, 3)
+         題目總分相關 題目分量表相關
+相處            0.443          0.431
+值得            0.419          0.428
+期待            0.500          0.491
+不確定          0.420          0.455
+喜歡            0.563          0.558
+平衡            0.270          0.308
+照顧            0.485          0.552
+關注            0.426          0.470
+負擔            0.453          0.465
+思考            0.440          0.427
+時間            0.324          0.358
+不喜歡          0.296          0.329
+喜愛            0.517          0.540
+好母親          0.570          0.576
+將喜愛          0.423          0.419
+母親興趣        0.495          0.603
+母親高興        0.552          0.665
+母親建議        0.544          0.650
+母親談論        0.529          0.641
+母親期待        0.573          0.662
+母親相處        0.522          0.650
+母親爭論        0.383          0.306
+母親信心        0.577          0.701
+母親鼓勵        0.510          0.625
+母親批評        0.303          0.276
+先生談論        0.517          0.569
+先生批評        0.250          0.267
+先生體諒        0.496          0.626
+先生討論        0.614          0.668
+先生幫忙        0.502          0.592
+性慾變化        0.364          0.352
+先生支援        0.524          0.605
+先生負擔        0.503          0.490
+性調適          0.497          0.482
+先生分擔        0.531          0.624
+
+> #題目信度
+> isubrel <- c(isubr$x$Item.Rel.woi, isubr$y$Item.Rel.woi, isubr$z$Item.Rel.woi)
+
+> #卸下psychometrics套件
+> detach("package:psychometric", unload = TRUE)
+
+> #載入psych，看總量表與分量表的 Cronbach alpha
+> require(psych)
+
+> #題目刪除後全量表信度變化
+> itotalpha <- alpha(dta[, 1:35])$alpha.drop[,'raw_alpha']
+
+> #題目刪除後分量表信度變化
+> isubalpha <- lapply(ldta, alpha)
+
+> ialphad <- c(isubalpha$x$alpha.drop[,'raw_alpha'],
++              isubalpha$y$alpha.drop[,'raw_alpha'],
++              isubalpha$z$alpha.drop[,'raw_ .... [TRUNCATED]
+
+> #把分析結果集中
+> rslt4 <- as.data.frame(t(rbind(itotalpha, ialphad, isubrel)))
+
+> names(rslt4) <- c('總量表信度（刪題）', '分量表信度（刪題）', '題目信度')
+
+> #加上題目名字、顯示三位
+> #程式報表6.5
+> row.names(rslt4) <- names(dta[,1:35])
+
+> round(rslt4, 3)
+         總量表信度（刪題） 分量表信度（刪題） 題目信度
+相處                  0.910              0.813    0.254
+值得                  0.910              0.812    0.284
+期待                  0.909              0.809    0.311
+不確定                0.910              0.811    0.458
+喜歡                  0.909              0.805    0.359
+平衡                  0.913              0.823    0.316
+照顧                  0.909              0.803    0.557
+關注                  0.910              0.809    0.362
+負擔                  0.910              0.809    0.380
+思考                  0.910              0.812    0.336
+時間                  0.912              0.820    0.378
+不喜歡                0.912              0.819    0.268
+喜愛                  0.909              0.806    0.350
+好母親                0.908              0.803    0.416
+將喜愛                0.910              0.814    0.217
+母親興趣              0.909              0.839    0.439
+母親高興              0.909              0.835    0.476
+母親建議              0.908              0.835    0.521
+母親談論              0.909              0.835    0.520
+母親期待              0.908              0.835    0.465
+母親相處              0.909              0.837    0.430
+母親爭論              0.911              0.867    0.285
+母親信心              0.908              0.829    0.626
+母親鼓勵              0.909              0.836    0.582
+母親批評              0.912              0.870    0.259
+先生談論              0.909              0.815    0.425
+先生批評              0.912              0.839    0.177
+先生體諒              0.909              0.809    0.517
+先生討論              0.907              0.804    0.579
+先生幫忙              0.909              0.812    0.522
+性慾變化              0.911              0.837    0.323
+先生支援              0.909              0.813    0.439
+先生負擔              0.909              0.822    0.430
+性調適                0.909              0.825    0.479
+先生分擔              0.909              0.809    0.546
+
+> #因素分析
+> #根據量表設計理念，因素數為 3
+> #程式報表6.6
+> require(psych)
+
+> print.psych(fa(dta[, 1:35], nfactor = 3, fm = "pa", rotate = "promax"), cut = .3)
+Loading required namespace: GPArotation
+Factor Analysis using method =  pa
+Call: fa(r = dta[, 1:35], nfactors = 3, rotate = "promax", fm = "pa")
+Standardized loadings (pattern matrix) based upon correlation matrix
+           PA3   PA1   PA2    h2   u2 com
+相處                       0.229 0.77 1.9
+值得                       0.205 0.79 2.2
+期待      0.31  0.32       0.320 0.68 2.0
+不確定                0.59 0.329 0.67 1.0
+喜歡            0.31       0.372 0.63 2.2
+平衡                  0.61 0.268 0.73 1.1
+照顧                  0.50 0.344 0.66 1.1
+關注                  0.60 0.352 0.65 1.0
+負擔                  0.41 0.277 0.72 1.3
+思考                       0.229 0.77 2.2
+時間                  0.44 0.195 0.80 1.1
+不喜歡                0.50 0.208 0.79 1.0
+喜愛            0.46       0.339 0.66 1.2
+好母親          0.39       0.371 0.63 1.6
+將喜愛          0.37       0.242 0.76 1.5
+母親興趣  0.68             0.431 0.57 1.0
+母親高興  0.71             0.530 0.47 1.1
+母親建議  0.75             0.527 0.47 1.0
+母親談論  0.77             0.514 0.49 1.0
+母親期待  0.69             0.552 0.45 1.2
+母親相處  0.80             0.533 0.47 1.0
+母親爭論              0.56 0.279 0.72 1.2
+母親信心  0.80             0.579 0.42 1.0
+母親鼓勵  0.74             0.469 0.53 1.1
+母親批評              0.51 0.214 0.79 1.5
+先生談論        0.72       0.423 0.58 1.0
+先生批評                   0.078 0.92 2.1
+先生體諒        0.75       0.412 0.59 1.1
+先生討論        0.78       0.553 0.45 1.1
+先生幫忙        0.78       0.439 0.56 1.1
+性慾變化              0.36 0.191 0.81 1.4
+先生支援        0.67       0.398 0.60 1.0
+先生負擔        0.34  0.40 0.357 0.64 2.1
+性調適          0.40       0.280 0.72 1.2
+先生分擔        0.79       0.468 0.53 1.1
+
+                       PA3  PA1  PA2
+SS loadings           4.91 4.73 2.87
+Proportion Var        0.14 0.14 0.08
+Cumulative Var        0.14 0.28 0.36
+Proportion Explained  0.39 0.38 0.23
+Cumulative Proportion 0.39 0.77 1.00
+
+ With factor correlations of
+     PA3  PA1  PA2
+PA3 1.00 0.64 0.44
+PA1 0.64 1.00 0.59
+PA2 0.44 0.59 1.00
+
+Mean item complexity =  1.3
+Test of the hypothesis that 3 factors are sufficient.
+
+The degrees of freedom for the null model are  595  and the objective function was  14.35 with Chi Square of  6981.92
+The degrees of freedom for the model are 493  and the objective function was  3.71
+
+The root mean square of the residuals (RMSR) is  0.06
+The df corrected root mean square of the residuals is  0.06
+
+The harmonic number of observations is  500 with the empirical chi square  1835.11  with prob <  1.7e-153
+The total number of observations was  500  with Likelihood Chi Square =  1797.76  with prob <  1.4e-147
+
+Tucker Lewis Index of factoring reliability =  0.752
+RMSEA index =  0.074  and the 90 % confidence intervals are  0.069 0.076
+BIC =  -1266.05
+Fit based upon off diagonal values = 0.96
+Measures of factor score adequacy
+                                                   PA3  PA1  PA2
+Correlation of (regression) scores with factors   0.96 0.95 0.91
+Multiple R square of scores with factors          0.91 0.90 0.82
+Minimum correlation of possible factor scores     0.83 0.80 0.65
+
+> #平行分析探索因素數
+> #圖6.4
+> fa.parallel(dta[, 1:35], fa = "pc", show.legend = FALSE)
+Parallel analysis suggests that the number of factors =  NA  and the number of components =  4
+
+> #設定因素數是4，看看因素結構
+> #程式報表6.7
+> print.psych(fa(dta[, 1:35], nfactor = 4, fm = "pa", rotate = "promax"), cut = .3)
+Factor Analysis using method =  pa
+Call: fa(r = dta[, 1:35], nfactors = 4, rotate = "promax", fm = "pa")
+Standardized loadings (pattern matrix) based upon correlation matrix
+           PA1   PA3   PA4   PA2   h2   u2 com
+相處                  0.40       0.26 0.74 1.2
+值得                  0.39       0.24 0.76 1.2
+期待                  0.61       0.43 0.57 1.1
+不確定                      0.55 0.33 0.67 1.2
+喜歡                  0.59       0.47 0.53 1.1
+平衡                        0.60 0.28 0.72 1.1
+照顧                        0.46 0.36 0.64 1.7
+關注                        0.56 0.35 0.65 1.2
+負擔                        0.37 0.28 0.72 1.8
+思考                  0.48       0.30 0.70 1.1
+時間                        0.42 0.19 0.81 1.1
+不喜歡                      0.47 0.21 0.79 1.1
+喜愛                  0.84       0.60 0.40 1.0
+好母親                0.63       0.49 0.51 1.1
+將喜愛                0.67       0.40 0.60 1.1
+母親興趣  0.64                   0.44 0.56 1.0
+母親高興  0.70                   0.56 0.44 1.1
+母親建議  0.69                   0.53 0.47 1.0
+母親談論  0.73                   0.53 0.47 1.0
+母親期待  0.67                   0.57 0.43 1.2
+母親相處  0.73                   0.53 0.47 1.0
+母親爭論                    0.56 0.31 0.69 1.2
+母親信心  0.76                   0.59 0.41 1.0
+母親鼓勵  0.70                   0.48 0.52 1.0
+母親批評                    0.51 0.24 0.76 1.5
+先生談論        0.59             0.42 0.58 1.2
+先生批評                         0.12 0.88 2.5
+先生體諒        0.76             0.49 0.51 1.0
+先生討論        0.72             0.59 0.41 1.1
+先生幫忙        0.71             0.47 0.53 1.1
+性慾變化                    0.37 0.22 0.78 1.7
+先生支援        0.67             0.46 0.54 1.0
+先生負擔        0.36        0.41 0.40 0.60 2.0
+性調適          0.36             0.29 0.71 1.5
+先生分擔        0.69             0.48 0.52 1.1
+
+                       PA1  PA3  PA4  PA2
+SS loadings           4.25 3.45 3.49 2.72
+Proportion Var        0.12 0.10 0.10 0.08
+Cumulative Var        0.12 0.22 0.32 0.40
+Proportion Explained  0.31 0.25 0.25 0.20
+Cumulative Proportion 0.31 0.55 0.80 1.00
+
+ With factor correlations of
+     PA1  PA3  PA4  PA2
+PA1 1.00 0.52 0.54 0.36
+PA3 0.52 1.00 0.54 0.52
+PA4 0.54 0.54 1.00 0.44
+PA2 0.36 0.52 0.44 1.00
+
+Mean item complexity =  1.2
+Test of the hypothesis that 4 factors are sufficient.
+
+The degrees of freedom for the null model are  595  and the objective function was  14.35 with Chi Square of  6981.92
+The degrees of freedom for the model are 461  and the objective function was  2.75
+
+The root mean square of the residuals (RMSR) is  0.04
+The df corrected root mean square of the residuals is  0.05
+
+The harmonic number of observations is  500 with the empirical chi square  1040.25  with prob <  1e-46
+The total number of observations was  500  with Likelihood Chi Square =  1329.27  with prob <  4.1e-85
+
+Tucker Lewis Index of factoring reliability =  0.823
+RMSEA index =  0.063  and the 90 % confidence intervals are  0.058 0.065
+BIC =  -1535.66
+Fit based upon off diagonal values = 0.98
+Measures of factor score adequacy
+                                                   PA1  PA3  PA4  PA2
+Correlation of (regression) scores with factors   0.95 0.94 0.93 0.90
+Multiple R square of scores with factors          0.90 0.88 0.87 0.81
+Minimum correlation of possible factor scores     0.81 0.75 0.74 0.62
+
+> #選題後，以另一個樣本驗證
+> dta2 <- read.table("prenatal2.txt", header = TRUE, fileEncoding="BIG5")
+
+> #平行分析看看因素數
+> #圖6.5
+> fa.parallel(dta2, fa = "pc", show.legend = FALSE)
+Parallel analysis suggests that the number of factors =  NA  and the number of components =  3
+
+> #設定因素數是3、因素分析結果
+> #程式報表6.8, 6.9
+> print.psych(fa(dta2, fm = "pa", nfactor = 3, rotate = "promax"), cut = .3)
+Factor Analysis using method =  pa
+Call: fa(r = dta2, nfactors = 3, rotate = "promax", fm = "pa")
+Standardized loadings (pattern matrix) based upon correlation matrix
+           PA1   PA2   PA3   h2   u2 com
+喜愛                  0.83 0.76 0.24 1.1
+好母親                0.63 0.47 0.53 1.0
+將喜愛                0.88 0.67 0.33 1.0
+母親興趣  0.66             0.58 0.42 1.2
+母親高興  0.68             0.64 0.36 1.2
+母親建議  0.73             0.50 0.50 1.1
+母親談論  0.83             0.64 0.36 1.0
+母親期待  0.77             0.67 0.33 1.1
+母親相處  0.90             0.69 0.31 1.0
+母親信心  0.60             0.33 0.67 1.0
+母親鼓勵  0.68             0.47 0.53 1.0
+先生體諒        0.78       0.60 0.40 1.0
+先生討論        0.49       0.31 0.69 1.3
+先生幫忙        0.72       0.45 0.55 1.0
+先生支援        0.72       0.59 0.41 1.0
+先生分擔        0.70       0.50 0.50 1.1
+
+                       PA1  PA2  PA3
+SS loadings           4.39 2.43 2.06
+Proportion Var        0.27 0.15 0.13
+Cumulative Var        0.27 0.43 0.56
+Proportion Explained  0.49 0.27 0.23
+Cumulative Proportion 0.49 0.77 1.00
+
+ With factor correlations of
+     PA1  PA2  PA3
+PA1 1.00 0.43 0.46
+PA2 0.43 1.00 0.50
+PA3 0.46 0.50 1.00
+
+Mean item complexity =  1.1
+Test of the hypothesis that 3 factors are sufficient.
+
+The degrees of freedom for the null model are  120  and the objective function was  8.71 with Chi Square of  1678.72
+The degrees of freedom for the model are 75  and the objective function was  0.99
+
+The root mean square of the residuals (RMSR) is  0.04
+The df corrected root mean square of the residuals is  0.05
+
+The harmonic number of observations is  200 with the empirical chi square  85.01  with prob <  0.2
+The total number of observations was  200  with Likelihood Chi Square =  188.26  with prob <  1e-11
+
+Tucker Lewis Index of factoring reliability =  0.882
+RMSEA index =  0.09  and the 90 % confidence intervals are  0.072 0.103
+BIC =  -209.12
+Fit based upon off diagonal values = 0.99
+Measures of factor score adequacy
+                                                   PA1  PA2  PA3
+Correlation of (regression) scores with factors   0.96 0.92 0.93
+Multiple R square of scores with factors          0.92 0.85 0.87
+Minimum correlation of possible factor scores     0.84 0.70 0.74
+
+> #定義分量表
+> ldta2 <- list(x = dta2[, 1:3], y = dta2[, 4:11], z = dta2[, 12:16])
+
+> #分量表信度
+> lapply(ldta2, alpha)
+$x
+
+Reliability analysis
+Call: FUN(x = X[[i]])
+
+  raw_alpha std.alpha G6(smc) average_r S/N   ase mean   sd
+      0.81      0.83    0.77      0.62   5 0.022  1.4 0.51
+
+ lower alpha upper     95% confidence boundaries
+0.77 0.81 0.86
+
+ Reliability if an item is dropped:
+       raw_alpha std.alpha G6(smc) average_r S/N alpha se
+喜愛        0.71      0.74    0.59      0.59 2.9    0.037
+好母親      0.80      0.82    0.69      0.69 4.5    0.026
+將喜愛      0.73      0.73    0.58      0.58 2.8    0.038
+
+ Item statistics
+         n raw.r std.r r.cor r.drop mean   sd
+喜愛   200  0.87  0.88  0.79   0.70  1.3 0.61
+好母親 200  0.87  0.84  0.69   0.64  1.6 0.70
+將喜愛 200  0.85  0.88  0.80   0.72  1.2 0.47
+
+Non missing response frequency for each item
+          1    2    3    4 miss
+喜愛   0.75 0.20 0.04 0.01    0
+好母親 0.56 0.34 0.09 0.01    0
+將喜愛 0.83 0.14 0.03 0.00    0
+
+$y
+
+Reliability analysis
+Call: FUN(x = X[[i]])
+
+  raw_alpha std.alpha G6(smc) average_r S/N   ase mean   sd
+       0.9      0.91    0.91      0.55 9.6 0.011  1.6 0.62
+
+ lower alpha upper     95% confidence boundaries
+0.88 0.9 0.92
+
+ Reliability if an item is dropped:
+         raw_alpha std.alpha G6(smc) average_r S/N alpha se
+母親興趣      0.89      0.89    0.89      0.54 8.3    0.012
+母親高興      0.89      0.89    0.89      0.54 8.1    0.012
+母親建議      0.89      0.90    0.90      0.55 8.7    0.012
+母親談論      0.88      0.89    0.90      0.54 8.1    0.013
+母親期待      0.88      0.89    0.89      0.53 7.8    0.013
+母親相處      0.88      0.89    0.89      0.53 7.9    0.013
+母親信心      0.90      0.91    0.91      0.58 9.7    0.011
+母親鼓勵      0.89      0.90    0.91      0.56 8.8    0.012
+
+ Item statistics
+           n raw.r std.r r.cor r.drop mean   sd
+母親興趣 200  0.77  0.78  0.76   0.70  1.5 0.74
+母親高興 200  0.79  0.80  0.79   0.72  1.4 0.73
+母親建議 200  0.76  0.75  0.70   0.67  1.7 0.84
+母親談論 200  0.82  0.81  0.78   0.74  1.7 0.89
+母親期待 200  0.82  0.84  0.82   0.77  1.4 0.70
+母親相處 200  0.83  0.83  0.81   0.78  1.5 0.76
+母親信心 200  0.67  0.65  0.59   0.55  1.8 0.90
+母親鼓勵 200  0.74  0.74  0.68   0.65  1.7 0.86
+
+Non missing response frequency for each item
+            1    2    3    4 miss
+母親興趣 0.62 0.30 0.04 0.04    0
+母親高興 0.68 0.24 0.04 0.04    0
+母親建議 0.52 0.32 0.11 0.04    0
+母親談論 0.54 0.28 0.12 0.06    0
+母親期待 0.66 0.28 0.03 0.03    0
+母親相處 0.67 0.24 0.06 0.04    0
+母親信心 0.43 0.36 0.14 0.06    0
+母親鼓勵 0.51 0.32 0.12 0.05    0
+
+$z
+
+Reliability analysis
+Call: FUN(x = X[[i]])
+
+  raw_alpha std.alpha G6(smc) average_r S/N   ase mean  sd
+      0.81      0.82    0.79      0.47 4.4 0.022  1.6 0.6
+
+ lower alpha upper     95% confidence boundaries
+0.76 0.81 0.85
+
+ Reliability if an item is dropped:
+         raw_alpha std.alpha G6(smc) average_r S/N alpha se
+先生體諒      0.74      0.76    0.71      0.44 3.1    0.030
+先生討論      0.81      0.82    0.78      0.53 4.4    0.022
+先生幫忙      0.77      0.79    0.74      0.48 3.7    0.027
+先生支援      0.76      0.76    0.71      0.44 3.2    0.028
+先生分擔      0.77      0.78    0.73      0.47 3.5    0.027
+
+ Item statistics
+           n raw.r std.r r.cor r.drop mean   sd
+先生體諒 200  0.80  0.81  0.75   0.67  1.6 0.79
+先生討論 200  0.69  0.67  0.53   0.48  1.8 0.89
+先生幫忙 200  0.76  0.75  0.65   0.59  1.7 0.83
+先生支援 200  0.78  0.80  0.75   0.67  1.4 0.63
+先生分擔 200  0.77  0.77  0.69   0.61  1.6 0.83
+
+Non missing response frequency for each item
+            1    2    3    4 miss
+先生體諒 0.56 0.30 0.10 0.03    0
+先生討論 0.44 0.34 0.18 0.05    0
+先生幫忙 0.48 0.34 0.16 0.03    0
+先生支援 0.71 0.24 0.04 0.02    0
+先生分擔 0.62 0.24 0.12 0.04    0
+
+
+> #總量表信度
+> #程式報表6.10
+> require(psych)
+
+> omega(dta2, nfactor = 3)
+Omega
+Call: omega(m = dta2, nfactors = 3)
+Alpha:                 0.9
+G.6:                   0.93
+Omega Hierarchical:    0.57
+Omega H asymptotic:    0.61
+Omega Total            0.93
+
+Schmid Leiman Factor loadings greater than  0.2
+            g   F1*   F2*   F3*   h2   u2   p2
+喜愛     0.65              0.57 0.76 0.24 0.56
+好母親   0.52              0.43 0.47 0.53 0.58
+將喜愛   0.55              0.60 0.67 0.33 0.45
+母親興趣 0.52  0.55             0.58 0.42 0.46
+母親高興 0.54  0.57             0.64 0.36 0.46
+母親建議 0.38  0.59             0.50 0.50 0.29
+母親談論 0.43  0.67             0.64 0.36 0.29
+母親期待 0.51  0.64             0.67 0.33 0.39
+母親相處 0.40  0.73             0.69 0.31 0.23
+母親信心 0.31  0.48             0.33 0.67 0.29
+母親鼓勵 0.40  0.56             0.47 0.53 0.34
+先生體諒 0.51        0.58       0.60 0.40 0.43
+先生討論 0.39        0.37       0.31 0.69 0.48
+先生幫忙 0.40        0.54       0.45 0.55 0.36
+先生支援 0.54        0.54       0.59 0.41 0.50
+先生分擔 0.47        0.52       0.50 0.50 0.44
+
+With eigenvalues of:
+   g  F1*  F2*  F3*
+3.65 2.94 1.36 0.94
+
+general/max  1.24   max/min =   3.11
+mean percent general =  0.41    with sd =  0.1 and cv of  0.25
+Explained Common Variance of the general factor =  0.41
+
+The degrees of freedom are 75  and the fit is  0.99
+The number of observations was  200  with Chi Square =  188.26  with prob <  1e-11
+The root mean square of the residuals is  0.04
+The df corrected root mean square of the residuals is  0.05
+RMSEA index =  0.09  and the 10 % confidence intervals are  0.072 0.103
+BIC =  -209.11
+
+Compare this with the adequacy of just a general factor and no group factors
+The degrees of freedom for just the general factor are 104  and the fit is  4.4
+The number of observations was  200  with Chi Square =  844.79  with prob <  2.2e-116
+The root mean square of the residuals is  0.2
+The df corrected root mean square of the residuals is  0.22
+
+RMSEA index =  0.193  and the 10 % confidence intervals are  0.177 0.201
+BIC =  293.76
+
+Measures of factor score adequacy
+                                                 g  F1*  F2*  F3*
+Correlation of scores with factors            0.80 0.86 0.76 0.73
+Multiple R square of scores with factors      0.63 0.75 0.58 0.54
+Minimum correlation of factor score estimates 0.26 0.49 0.17 0.08
+
+ Total, General and Subset omega for each subset
+                                                 g  F1*  F2*  F3*
+Omega total for total scores and subscales    0.93 0.91 0.82 0.82
+Omega general for total scores and subscales  0.57 0.32 0.37 0.44
+Omega group for total scores and subscales    0.32 0.59 0.45 0.38
